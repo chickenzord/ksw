@@ -1,0 +1,3 @@
+# ksw
+
+Kubeconfig SWitcher

@@ -2,6 +2,9 @@
 
 Kubeconfig SWitcher
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/chickenzord/ksw)](https://goreportcard.com/report/github.com/chickenzord/ksw)
+
+
 ## Installation
 
 ```sh

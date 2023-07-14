@@ -81,3 +81,24 @@ func generateKubeconfig(path string, contextName string) ([]byte, error) {
 
 	return bytes, nil
 }
+
+func listContexts(path string) ([]string, error) {
+	sourceBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var config apiv1.Config
+
+	if err := yaml.Unmarshal(sourceBytes, &config); err != nil {
+		return nil, err
+	}
+
+	contexts := []string{}
+
+	for _, context := range config.Contexts {
+		contexts = append(contexts, context.Name)
+	}
+
+	return contexts, nil
+}

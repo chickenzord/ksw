@@ -20,12 +20,12 @@ ksw context-name
 ```
 
 1. Try loading kubeconfig file from these locations:
-   1. Path set in `KSW_KUBECONFIG_ORIGINAL` (more on this later)
+   1. Path set in `KSW_KUBECONFIG_ORIGINAL` (more on this below)
    2. Path set in `KUBECONFIG`
    3. Default location `$HOME/.kube/config`
 2. Minify and flatten the config so it only contains clusters and users used by the specificed "context-name", then put it in a temp file
-3. Start a new shell with `KUBECONFIG` set to the temp file
-4. In addition, these environment variables also set in the sub-shell:
+3. Start a new shell ([same with the currently used](https://github.com/riywo/loginshell)) with `KUBECONFIG` set to the temp file
+4. Additionally, these environment variables also set in the sub-shell:
    - `KSW_KUBECONFIG_ORIGINAL`: To keep track of original kubeconfig file when starting recursive shells
    - `KSW_KUBECONFIG`: Same value as KUBECONFIG
    - `KSW_ACTIVE`: Always set to "true"

@@ -30,6 +30,18 @@ archives:
     format_overrides:
     - goos: windows
       format: zip
+
+brews:
+  - description: Switch Kubeconfig context in new shell
+    folder: Formula
+    download_strategy: CurlDownloadStrategy
+    license: "MIT"
+    repository:
+      owner: chickenzord
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+
 checksum:
   name_template: 'checksums.txt'
 snapshot:

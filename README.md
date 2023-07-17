@@ -42,3 +42,9 @@ Other solutions I have tried:
 - kubectx and kubens: They are good, but I switch and use multiple contexts concurrently a lot. Changing context in one terminal will change other terminals as well because they are sharing the same kubeconfig file.
 - kubie: Took a lot of inspirations from this project. But somehow it's doing too much and messed with ZDOTDIR breaking my ZSH setup.
 - kube_ps1: Still using this for showing current context, and it integrates well with ksw
+
+## Features and limitations
+
+- Supports recursive shell (starting ksw shell within ksw shell)
+- No automatic indicator in prompt, use the provided environment variables to set it depending on your setup
+- Only tested on ZSH on Darwin Arm64 as of now

@@ -33,6 +33,7 @@ archives:
 
 brews:
   - description: Switch Kubeconfig context in new shell
+    homepage: https://github.com/chickenzord/ksw
     folder: Formula
     download_strategy: CurlDownloadStrategy
     license: "MIT"

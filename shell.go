@@ -15,7 +15,7 @@ func currentLevel() int {
 
 	level, err := strconv.Atoi(os.Getenv("KSW_LEVEL"))
 	if err != nil {
-		panic(fmt.Sprintf("invalid KSW_LEVEL"))
+		panic("invalid KSW_LEVEL")
 	}
 
 	return level

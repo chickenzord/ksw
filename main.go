@@ -15,6 +15,7 @@ func main() {
 	}
 
 	var contextName string
+
 	if len(os.Args) == 1 {
 		c, err := pickContext()
 		if err != nil {

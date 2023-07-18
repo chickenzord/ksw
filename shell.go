@@ -64,9 +64,5 @@ func startShell(shell, contextName string) error {
 	sh.Stdin = os.Stdin
 	sh.Stdout = os.Stdout
 
-	if err := sh.Run(); err != nil {
-		return err
-	}
-
-	return nil
+	return sh.Run()
 }

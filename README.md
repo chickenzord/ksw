@@ -46,5 +46,6 @@ Other solutions I have tried:
 ## Features and limitations
 
 - Supports recursive shell (starting ksw shell within ksw shell)
+- Shows a built-in fuzzy finder (like [fzf](https://github.com/junegunn/fzf)) when no contexts specified in the argument
 - No automatic indicator in prompt, use the provided environment variables to set it depending on your setup
 - Only tested on ZSH on Darwin Arm64 as of now

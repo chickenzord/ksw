@@ -33,6 +33,11 @@ brews:
     folder: Formula
     download_strategy: CurlDownloadStrategy
     license: "MIT"
+    custom_block: |
+      head "https://github.com/chickenzord/ksw.git"
+    dependencies:
+      - name: go
+        type: build
     repository:
       owner: chickenzord
       name: homebrew-tap

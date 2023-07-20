@@ -34,7 +34,7 @@ brews:
     download_strategy: CurlDownloadStrategy
     license: "MIT"
     custom_block: |
-      head "https://github.com/chickenzord/ksw.git"
+      head "https://github.com/chickenzord/ksw.git", branch: "main"
     dependencies:
       - name: go
         type: build

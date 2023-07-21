@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/ghodss/yaml"
+	"github.com/ktr0731/go-fuzzyfinder"
 	apiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 )
 
@@ -101,4 +102,18 @@ func listContexts(path string) ([]string, error) {
 	}
 
 	return contexts, nil
+}
+
+func findContext() (string, error) {
+	contexts, err := listContexts(getOriginalKubeconfigPath())
+	if err != nil {
+		return "", err
+	}
+
+	i, err := fuzzyfinder.Find(contexts, func(i int) string { return contexts[i] })
+	if err != nil {
+		return "", err
+	}
+
+	return contexts[i], nil
 }

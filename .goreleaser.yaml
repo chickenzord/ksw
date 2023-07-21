@@ -40,7 +40,7 @@ brews:
       end
     install: |
       if build.head?
-        system "go", "build", *std_go_args(ldflags: "-s -w"), "."
+        system "go", "build", *std_go_args(ldflags: "-s -w -X main.version={{.Version}}"), "."
       else
         bin.install "ksw"
       end

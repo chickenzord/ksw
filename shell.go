@@ -58,6 +58,11 @@ func startShell(shell, contextName string) error {
 	defer func(contextName string) {
 		logf("exited from context %s", contextName)
 	}(contextName)
+	defer func(configFile string) {
+		if err := os.Remove(configFile); err != nil {
+			logf("failed to remove temporary kubeconfig file")
+		}
+	}(f.Name())
 
 	sh := exec.Command(shell)
 	sh.Stderr = os.Stderr

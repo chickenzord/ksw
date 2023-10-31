@@ -54,9 +54,9 @@ func startShell(shell, contextName string) error {
 	os.Setenv("KSW_LEVEL", fmt.Sprintf("%d", currentLevel()+1))
 	os.Setenv("KSW_CONTEXT", contextName)
 
-	fmt.Printf("Starting shell for context %s\n", contextName)
+	logf("starting shell for context %s", contextName)
 	defer func(contextName string) {
-		fmt.Printf("Exited from context %s\n", contextName)
+		logf("exited from context %s", contextName)
 	}(contextName)
 
 	sh := exec.Command(shell)

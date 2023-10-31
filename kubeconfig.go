@@ -58,8 +58,8 @@ func getOriginalKubeconfigPath() string {
 	return kubeconfigPath
 }
 
-func generateKubeconfig(path string, contextName string) ([]byte, error) {
-	sourceBytes, err := ioutil.ReadFile(path)
+func generateKubeconfig(sourcePath string, contextName string) ([]byte, error) {
+	sourceBytes, err := os.ReadFile(sourcePath)
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,5 @@
-name: golangci-lint
+name: lint
+
 on:
   push:
     branches:
@@ -9,8 +10,9 @@ permissions:
   contents: read
 
 jobs:
-  golangci:
-    name: lint
+
+  golangci-lint:
+    name: golangci-lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -22,3 +24,10 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.53
+
+  conventional-commits:
+    name: conventional-commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: webiny/action-conventional-commits@v1.1.0

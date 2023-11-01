@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -84,7 +83,7 @@ func generateKubeconfig(sourcePath string, contextName string) ([]byte, error) {
 }
 
 func listContexts(path string) ([]string, error) {
-	sourceBytes, err := ioutil.ReadFile(path)
+	sourceBytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

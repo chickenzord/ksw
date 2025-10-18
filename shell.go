@@ -3,24 +3,20 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strconv"
+	"syscall"
 )
 
-func currentLevel() int {
-	if os.Getenv("KSW_LEVEL") == "" {
-		return 0
-	}
-
-	level, err := strconv.Atoi(os.Getenv("KSW_LEVEL"))
-	if err != nil {
-		panic("invalid KSW_LEVEL")
-	}
-
-	return level
-}
-
+// startShell creates a new ksw session by generating a minified kubeconfig
+// and replacing the current process with the user's shell using syscall.Exec.
+//
+// It loads the original kubeconfig from KSW_KUBECONFIG_ORIGINAL, KUBECONFIG,
+// or $HOME/.kube/config (in that order), minifies it to include only the
+// specified context, writes it to a temporary file, and sets up environment
+// variables before executing the shell.
+//
+// The ksw process is replaced entirely, so this function never returns on success.
+// Temporary kubeconfig files are cleaned up by the OS temp directory cleanup.
 func startShell(shell, contextName string) error {
 	var kubeconfigOriginal string // TODO add condition to use original kubeconfig from cli flags
 	if path := os.Getenv("KSW_KUBECONFIG_ORIGINAL"); path != "" {
@@ -40,34 +36,63 @@ func startShell(shell, contextName string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+
+	defer func() {
+		_ = f.Close()
+	}()
 
 	if _, err := f.Write(b); err != nil {
 		return err
 	}
 
-	os.Setenv("KUBECONFIG", f.Name())
-	os.Setenv("KSW_KUBECONFIG_ORIGINAL", kubeconfigOriginal)
-	os.Setenv("KSW_KUBECONFIG", f.Name())
-	os.Setenv("KSW_ACTIVE", "true")
-	os.Setenv("KSW_SHELL", shell)
-	os.Setenv("KSW_LEVEL", fmt.Sprintf("%d", currentLevel()+1))
-	os.Setenv("KSW_CONTEXT", contextName)
+	_ = os.Setenv("KUBECONFIG", f.Name())
+	_ = os.Setenv("KSW_KUBECONFIG_ORIGINAL", kubeconfigOriginal)
+	_ = os.Setenv("KSW_KUBECONFIG", f.Name())
+	_ = os.Setenv("KSW_ACTIVE", "true")
+	_ = os.Setenv("KSW_SHELL", shell)
 
 	logf("starting shell for context %s", contextName)
-	defer func(contextName string) {
-		logf("exited from context %s", contextName)
-	}(contextName)
-	defer func(configFile string) {
-		if err := os.Remove(configFile); err != nil {
-			logf("failed to remove temporary kubeconfig file")
-		}
-	}(f.Name())
 
-	sh := exec.Command(shell)
-	sh.Stderr = os.Stderr
-	sh.Stdin = os.Stdin
-	sh.Stdout = os.Stdout
+	// Replace ksw process with shell
+	// Temp file cleanup relies on OS temp directory cleanup
+	if err := syscall.Exec(shell, []string{shell}, os.Environ()); err != nil {
+		return fmt.Errorf("failed to exec shell: %w", err)
+	}
 
-	return sh.Run()
+	return nil
+}
+
+// switchContext updates an existing ksw session to use a different Kubernetes context.
+//
+// This function is called when already inside a ksw session (KSW_KUBECONFIG_ORIGINAL is set).
+// It regenerates the minified kubeconfig for the new context and overwrites the existing
+// temporary kubeconfig file in-place. kubectl and other tools will immediately see the
+// new context without requiring a new shell or process.
+//
+// This approach avoids nested shells and keeps the same process tree level.
+func switchContext(contextName string) error {
+	kubeconfigOriginal := os.Getenv("KSW_KUBECONFIG_ORIGINAL")
+	if kubeconfigOriginal == "" {
+		return fmt.Errorf("KSW_KUBECONFIG_ORIGINAL not set, cannot switch context")
+	}
+
+	existingKubeconfig := os.Getenv("KSW_KUBECONFIG")
+	if existingKubeconfig == "" {
+		return fmt.Errorf("KSW_KUBECONFIG not set, cannot switch context")
+	}
+
+	b, err := generateKubeconfig(kubeconfigOriginal, contextName)
+	if err != nil {
+		return err
+	}
+
+	// Overwrite existing temp file with new context
+	if err := os.WriteFile(existingKubeconfig, b, 0600); err != nil {
+		return err
+	}
+
+	logf("switched to context %s", contextName)
+
+	// No process spawning - kubectl will immediately see the new context
+	return nil
 }

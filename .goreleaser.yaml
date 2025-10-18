@@ -1,3 +1,5 @@
+version: 2
+
 before:
   hooks:
     - go mod tidy
@@ -23,7 +25,7 @@ builds:
     mod_timestamp: '{{ .CommitTimestamp }}'
 
 archives:
-  - format: tar.gz
+  - id: default
     # this name template makes the OS and Arch compatible with the results of uname.
     name_template: >-
       {{ .ProjectName }}_
@@ -32,10 +34,13 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-    # use zip for windows archives
     format_overrides:
-    - goos: windows
-      format: zip
+      - goos: windows
+        formats: ["zip"]
+      - goos: linux
+        formats: ["tar.gz"]
+      - goos: darwin
+        formats: ["tar.gz"]
 
 brews:
   - description: Switch Kubeconfig context in new shell
@@ -63,7 +68,7 @@ brews:
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 changelog:
   sort: asc
   filters:
@@ -72,7 +77,8 @@ changelog:
       - '^test:'
       - '^ci:'
       - '^nit:'
-      - '^build(ci):'
+      - '^chore(.+):'
+      - '^build(.+):'
       - Merge pull request
       - Merge branch
   groups:

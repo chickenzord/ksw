@@ -2,15 +2,25 @@ before:
   hooks:
     - go mod tidy
     - go generate ./...
+
 builds:
-  - env:
+  - id: ksw
+    main: .
+    binary: ksw
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
       - windows
       - darwin
+    goarch:
+      - amd64
+      - arm64
+    goarm:
+      - "7"
     flags:
       - -trimpath
+    mod_timestamp: '{{ .CommitTimestamp }}'
 
 archives:
   - format: tar.gz
@@ -30,7 +40,7 @@ archives:
 brews:
   - description: Switch Kubeconfig context in new shell
     homepage: https://github.com/chickenzord/ksw
-    folder: Formula
+    directory: Formula
     download_strategy: CurlDownloadStrategy
     license: "MIT"
     custom_block: |
@@ -62,6 +72,48 @@ changelog:
       - '^test:'
       - '^ci:'
       - '^nit:'
+      - '^build(ci):'
+      - Merge pull request
+      - Merge branch
+  groups:
+  - title: Features
+    regexp: "^.*feat[(\\w)]*:+.*$"
+    order: 0
+  - title: 'Bug fixes'
+    regexp: "^.*fix[(\\w)]*:+.*$"
+    order: 1
+  - title: 'Enhancements'
+    regexp: "^.*enhancement[(\\w)]*:+.*$"
+    order: 2
+  - title: Others
+    order: 999
+
+# Release configuration
+release:
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## ksw {{ .Tag }}
+
+    Kubeconfig SWitcher - Switch Kubernetes contexts in isolated shells.
+
+    ### Installation
+
+    **Homebrew:**
+    ```bash
+    brew install chickenzord/tap/ksw
+    ```
+
+    **Go Install:**
+    ```bash
+    go install github.com/chickenzord/ksw@{{ .Tag }}
+    ```
+
+    **Binary Download:**
+    Download the binary for your platform from the assets below.
+  footer: |
+    **Full Changelog**: https://github.com/chickenzord/ksw/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj

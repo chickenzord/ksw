@@ -21,19 +21,30 @@ Alternatively you can also install from the source by running `go install github
 ksw context-name
 ```
 
-1. Try loading kubeconfig file from these locations:
-   1. Path set in `KSW_KUBECONFIG_ORIGINAL` (more on this below)
-   2. Path set in `KUBECONFIG`
-   3. Default location `$HOME/.kube/config`
-2. Minify and flatten the config so it only contains clusters and users used by the specificed "context-name", then put it in a temp file
-3. Start a new shell ([same with the currently used](https://github.com/riywo/loginshell)) with `KUBECONFIG` set to the temp file
-4. Additionally, these environment variables also set in the sub-shell:
-   - `KSW_KUBECONFIG_ORIGINAL`: To keep track of original kubeconfig file when starting recursive shells
-   - `KSW_KUBECONFIG`: Same value as KUBECONFIG
-   - `KSW_ACTIVE`: Always set to "true"
-   - `KSW_SHELL`: Path to the shell (e.g. `/bin/zsh`)
-   - `KSW_LEVEL`: Nesting level of the shell, starting at 1 when first running ksw
-   - `KSW_CONTEXT`: Kube context name used when running ksw
+**First time (not in a ksw session):**
+1. Loads kubeconfig from these locations (in order):
+   - Path set in `KSW_KUBECONFIG_ORIGINAL`
+   - Path set in `KUBECONFIG`
+   - Default location `$HOME/.kube/config`
+2. Minifies the config to only include the cluster, user, and context for the specified context
+3. Writes the minified config to a temporary file
+4. Replaces the ksw process with your shell using `exec`, setting `KUBECONFIG` to the temp file
+5. Your shell now uses the isolated context - kubectl commands work immediately
+
+**When already in a ksw session:**
+1. Running `ksw another-context` detects you're already in a session
+2. Updates the existing temp kubeconfig file with the new context
+3. Returns immediately - kubectl sees the new context right away
+4. No nested shells, no process spawning
+
+**Environment variables available in the shell:**
+- `KSW_KUBECONFIG_ORIGINAL`: Path to your original kubeconfig file
+- `KSW_KUBECONFIG`: Path to the temp minified kubeconfig
+- `KUBECONFIG`: Same as KSW_KUBECONFIG (standard kubectl environment variable)
+- `KSW_ACTIVE`: Always set to "true" when in a ksw session
+- `KSW_SHELL`: Path to your shell (e.g. `/bin/zsh`)
+
+> **Note:** Starting from v0.5.0, ksw uses `syscall.Exec()` to replace its process with your shell, eliminating the ksw process from the process tree. When switching contexts within a ksw session, the kubeconfig file is updated in-place without spawning new shells, avoiding any nesting issues.
 
 ## Wait, why am I creating this?
 
@@ -45,9 +56,17 @@ Other solutions I have tried:
 - kubie: Took a lot of inspirations from this project. But somehow it's doing too much and messed with ZDOTDIR breaking my ZSH setup.
 - kube_ps1: Still using this for showing current context, and it integrates well with ksw
 
-## Features and limitations
+## Features
 
-- Supports recursive shell (starting ksw shell within ksw shell)
-- Shows a built-in fuzzy finder (like [fzf](https://github.com/junegunn/fzf)) when no contexts specified in the argument
-- No automatic indicator in prompt, use the provided environment variables to set it depending on your setup
-- Only tested on ZSH on Darwin Arm64 as of now
+- **Isolated contexts per terminal**: Work with different Kubernetes contexts across multiple terminals simultaneously without conflicts
+- **No nested shells**: Switching contexts in a ksw session updates the config in-place
+- **Process efficiency**: Uses `exec` to replace ksw process with your shell (v0.5.0+)
+- **Fuzzy finder**: Built-in fuzzy finder (like [fzf](https://github.com/junegunn/fzf)) when no context specified
+- **Minified configs**: Each session uses a minified kubeconfig with only the necessary context
+- **Simple integration**: Works with any kubectl-compatible tool without configuration
+
+## Limitations
+
+- No automatic prompt indicator - use the environment variables (`KSW_ACTIVE`, `KSW_KUBECONFIG_ORIGINAL`) in your prompt setup
+- Temp kubeconfig files rely on OS cleanup (typically automatic in `/tmp`)
+- Primarily tested on ZSH on Darwin Arm64

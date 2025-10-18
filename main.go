@@ -49,5 +49,10 @@ func appAction(c *cli.Context) error {
 		return err
 	}
 
+	// If already in a ksw session, switch context in-place instead of nesting
+	if os.Getenv("KSW_KUBECONFIG_ORIGINAL") != "" {
+		return switchContext(contextName)
+	}
+
 	return startShell(shell, contextName)
 }

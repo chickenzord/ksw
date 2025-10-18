@@ -36,17 +36,20 @@ func startShell(shell, contextName string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+
+	defer func() {
+		_ = f.Close()
+	}()
 
 	if _, err := f.Write(b); err != nil {
 		return err
 	}
 
-	os.Setenv("KUBECONFIG", f.Name())
-	os.Setenv("KSW_KUBECONFIG_ORIGINAL", kubeconfigOriginal)
-	os.Setenv("KSW_KUBECONFIG", f.Name())
-	os.Setenv("KSW_ACTIVE", "true")
-	os.Setenv("KSW_SHELL", shell)
+	_ = os.Setenv("KUBECONFIG", f.Name())
+	_ = os.Setenv("KSW_KUBECONFIG_ORIGINAL", kubeconfigOriginal)
+	_ = os.Setenv("KSW_KUBECONFIG", f.Name())
+	_ = os.Setenv("KSW_ACTIVE", "true")
+	_ = os.Setenv("KSW_SHELL", shell)
 
 	logf("starting shell for context %s", contextName)
 

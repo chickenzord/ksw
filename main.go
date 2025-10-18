@@ -8,10 +8,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var (
-	version = "dev"
-)
-
 func main() {
 	app := &cli.App{
 		Name:            "ksw",
@@ -20,7 +16,7 @@ func main() {
 		Action:          appAction,
 		ArgsUsage:       "[context-name]",
 		HideHelpCommand: true,
-		Version:         version,
+		Version:         Version,
 		HideVersion:     false,
 	}
 

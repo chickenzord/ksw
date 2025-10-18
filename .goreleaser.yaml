@@ -22,6 +22,11 @@ builds:
       - "7"
     flags:
       - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Version}}
+      - -X main.GitCommit={{.FullCommit}}
+      - -X main.BuildDate={{.Date}}
     mod_timestamp: '{{ .CommitTimestamp }}'
 
 archives:
@@ -55,7 +60,7 @@ brews:
       end
     install: |
       if build.head?
-        system "go", "build", *std_go_args(ldflags: "-s -w -X main.version={{.Version}}"), "."
+        system "go", "build", *std_go_args(ldflags: "-s -w -X main.Version={{.Version}} -X main.GitCommit={{.FullCommit}} -X main.BuildDate={{.Date}}"), "."
       else
         bin.install "ksw"
       end

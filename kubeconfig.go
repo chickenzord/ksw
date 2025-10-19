@@ -103,13 +103,26 @@ func listContexts(path string) ([]string, error) {
 	return contexts, nil
 }
 
-func findContext() (string, error) {
+func findContext(query string) (string, error) {
 	contexts, err := listContexts(getOriginalKubeconfigPath())
 	if err != nil {
 		return "", err
 	}
 
-	i, err := fuzzyfinder.Find(contexts, func(i int) string { return contexts[i] })
+	// Try exact match first
+	for _, ctx := range contexts {
+		if ctx == query {
+			return ctx, nil
+		}
+	}
+
+	// Otherwise fuzzy finder
+	opts := []fuzzyfinder.Option{}
+	if query != "" {
+		opts = append(opts, fuzzyfinder.WithQuery(query))
+	}
+
+	i, err := fuzzyfinder.Find(contexts, func(i int) string { return contexts[i] }, opts...)
 	if err != nil {
 		return "", err
 	}

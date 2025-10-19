@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/ghodss/yaml"
 	"github.com/ktr0731/go-fuzzyfinder"
@@ -104,10 +105,14 @@ func listContexts(path string) ([]string, error) {
 }
 
 func findContext(query string) (string, error) {
-	contexts, err := listContexts(getOriginalKubeconfigPath())
+	kubeconfigPath := getOriginalKubeconfigPath()
+
+	contexts, err := listContexts(kubeconfigPath)
 	if err != nil {
 		return "", err
 	}
+
+	slices.Sort(contexts)
 
 	// Try exact match first
 	for _, ctx := range contexts {
@@ -117,7 +122,9 @@ func findContext(query string) (string, error) {
 	}
 
 	// Otherwise fuzzy finder
-	opts := []fuzzyfinder.Option{}
+	opts := []fuzzyfinder.Option{
+		fuzzyfinder.WithHeader(fmt.Sprintf("Using contexts from %s", kubeconfigPath)),
+	}
 	if query != "" {
 		opts = append(opts, fuzzyfinder.WithQuery(query))
 	}

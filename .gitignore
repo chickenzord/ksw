@@ -22,3 +22,9 @@ go.work
 
 # Others
 dist/
+
+# Coverage files
+coverage.txt
+
+# binary
+/ksw

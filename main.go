@@ -18,6 +18,13 @@ func main() {
 		HideHelpCommand: true,
 		Version:         Version,
 		HideVersion:     false,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "list",
+				Aliases: []string{"l"},
+				Usage:   "list available contexts without starting a shell",
+			},
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -27,6 +34,11 @@ func main() {
 }
 
 func mainAction(c *cli.Context) error {
+	// Handle --list flag
+	if c.Bool("list") {
+		return listContextsAction()
+	}
+
 	// Get initial query from args, or empty string if no args
 	query := ""
 	if c.Args().Len() > 0 {
@@ -51,4 +63,19 @@ func mainAction(c *cli.Context) error {
 	}
 
 	return startShell(shell, contextName)
+}
+
+func listContextsAction() error {
+	kubeconfigPath := getOriginalKubeconfigPath()
+
+	contexts, err := listContexts(kubeconfigPath)
+	if err != nil {
+		return err
+	}
+
+	for _, ctx := range contexts {
+		fmt.Println(ctx)
+	}
+
+	return nil
 }

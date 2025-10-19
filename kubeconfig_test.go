@@ -91,6 +91,7 @@ func TestMinifyConfig(t *testing.T) {
 				t.Errorf("minifyConfig() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			if tt.wantErr {
 				return
 			}
@@ -199,6 +200,7 @@ users:
 				t.Errorf("listContexts() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			if tt.wantErr {
 				return
 			}
@@ -293,6 +295,7 @@ users:
 				t.Errorf("generateKubeconfig() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			if tt.wantErr {
 				return
 			}
@@ -312,19 +315,19 @@ func TestGetOriginalKubeconfigPath(t *testing.T) {
 
 	// Restore after test
 	defer func() {
-		os.Setenv("KSW_KUBECONFIG_ORIGINAL", origKswOriginal)
-		os.Setenv("KUBECONFIG", origKubeconfig)
-		os.Setenv("HOME", origHome)
+		_ = os.Setenv("KSW_KUBECONFIG_ORIGINAL", origKswOriginal)
+		_ = os.Setenv("KUBECONFIG", origKubeconfig)
+		_ = os.Setenv("HOME", origHome)
 	}()
 
 	tests := []struct {
-		name              string
-		kswOriginal       string
-		kubeconfig        string
-		home              string
-		expectedContains  string
-		setKswOriginal    bool
-		setKubeconfig     bool
+		name             string
+		kswOriginal      string
+		kubeconfig       string
+		home             string
+		expectedContains string
+		setKswOriginal   bool
+		setKubeconfig    bool
 	}{
 		{
 			name:             "KSW_KUBECONFIG_ORIGINAL set",
@@ -348,18 +351,21 @@ func TestGetOriginalKubeconfigPath(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Clear all env vars
-			os.Unsetenv("KSW_KUBECONFIG_ORIGINAL")
-			os.Unsetenv("KUBECONFIG")
+			_ = os.Unsetenv("KSW_KUBECONFIG_ORIGINAL")
+			_ = os.Unsetenv("KUBECONFIG")
 
 			// Set env vars as needed
+
 			if tt.setKswOriginal {
-				os.Setenv("KSW_KUBECONFIG_ORIGINAL", tt.kswOriginal)
+				_ = os.Setenv("KSW_KUBECONFIG_ORIGINAL", tt.kswOriginal)
 			}
+
 			if tt.setKubeconfig {
-				os.Setenv("KUBECONFIG", tt.kubeconfig)
+				_ = os.Setenv("KUBECONFIG", tt.kubeconfig)
 			}
+
 			if tt.home != "" {
-				os.Setenv("HOME", tt.home)
+				_ = os.Setenv("HOME", tt.home)
 			}
 
 			got := getOriginalKubeconfigPath()

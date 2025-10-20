@@ -4,6 +4,7 @@ Kubeconfig SWitcher
 
 ![Go version](https://img.shields.io/github/go-mod/go-version/chickenzord/ksw)
 [![Go Report Card](https://goreportcard.com/badge/github.com/chickenzord/ksw)](https://goreportcard.com/report/github.com/chickenzord/ksw)
+[![codecov](https://codecov.io/github/chickenzord/ksw/graph/badge.svg?token=VBb5SKLC4O)](https://codecov.io/github/chickenzord/ksw)
 ![GitHub release](https://img.shields.io/github/v/release/chickenzord/ksw)
 
 

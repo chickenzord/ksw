@@ -7,7 +7,7 @@ require (
 	github.com/ktr0731/go-fuzzyfinder v0.9.0
 	github.com/riywo/loginshell v0.0.0-20200815045211-7d26008be1ab
 	github.com/urfave/cli/v2 v2.27.7
-	k8s.io/client-go v0.34.1
+	k8s.io/client-go v0.34.3
 )
 
 require (
@@ -34,7 +34,7 @@ require (
 	golang.org/x/term v0.36.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/apimachinery v0.34.1 // indirect
+	k8s.io/apimachinery v0.34.3 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect

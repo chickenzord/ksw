@@ -9,5 +9,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    reviewers:
-      - akhy
+    open-pull-requests-limit: 3
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 3

@@ -32,6 +32,10 @@ func main() {
 		},
 	}
 
+	cli.VersionPrinter = func(c *cli.Context) {
+		fmt.Println(GetVersionInfo().String())
+	}
+
 	if err := app.Run(os.Args); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

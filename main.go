@@ -24,6 +24,11 @@ func main() {
 				Aliases: []string{"l"},
 				Usage:   "list available contexts without starting a shell",
 			},
+			&cli.BoolFlag{
+				Name:    "env",
+				Aliases: []string{"e"},
+				Usage:   "print ksw environment variables",
+			},
 		},
 	}
 
@@ -37,6 +42,11 @@ func mainAction(c *cli.Context) error {
 	// Handle --list flag
 	if c.Bool("list") {
 		return listContextsAction()
+	}
+
+	// Handle --env flag
+	if c.Bool("env") {
+		return envAction()
 	}
 
 	// Get initial query from args, or empty string if no args
@@ -75,6 +85,23 @@ func listContextsAction() error {
 
 	for _, ctx := range contexts {
 		fmt.Println(ctx)
+	}
+
+	return nil
+}
+
+func envAction() error {
+	envVars := []string{
+		"KSW_ACTIVE",
+		"KSW_KUBECONFIG",
+		"KSW_KUBECONFIG_ORIGINAL",
+		"KSW_SHELL",
+		"KUBECONFIG",
+	}
+
+	for _, envVar := range envVars {
+		value := os.Getenv(envVar)
+		fmt.Printf("%s=%s\n", envVar, value)
 	}
 
 	return nil

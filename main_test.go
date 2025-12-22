@@ -116,6 +116,7 @@ func TestEnvAction(t *testing.T) {
 
 			// Read captured output
 			var buf bytes.Buffer
+
 			_, _ = io.Copy(&buf, r)
 			output := buf.String()
 

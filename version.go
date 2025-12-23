@@ -36,6 +36,6 @@ func GetVersionInfo() VersionInfo {
 
 // String returns a formatted version string
 func (i VersionInfo) String() string {
-	return fmt.Sprintf("portosync %s (%s) built on %s with %s for %s",
+	return fmt.Sprintf("ksw %s (%s) built on %s with %s for %s",
 		i.Version, i.GitCommit, i.BuildDate, i.GoVersion, i.Platform)
 }

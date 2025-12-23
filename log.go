@@ -1,11 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 var (
 	logPrefix = "ksw"
 )
 
 func logf(format string, a ...any) {
-	fmt.Printf("%s: %s\n", logPrefix, fmt.Sprintf(format, a...))
+	fmt.Fprintf(os.Stderr, "%s: %s\n", logPrefix, fmt.Sprintf(format, a...))
 }

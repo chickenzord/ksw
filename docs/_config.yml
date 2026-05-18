@@ -1,0 +1,7 @@
+title: ksw - Kubeconfig SWitcher
+description: A simple CLI tool that switches Kubernetes contexts by starting a new shell with an isolated, minified kubeconfig file
+theme: jekyll-theme-cayman
+show_downloads: true
+github:
+  repository_url: https://github.com/chickenzord/ksw
+  is_project_page: true

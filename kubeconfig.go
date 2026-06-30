@@ -70,12 +70,36 @@ func generateKubeconfig(sourcePath string, contextName string) ([]byte, error) {
 		return nil, err
 	}
 
-	miniConfig, err := minifyConfig(config, contextName)
-	if err != nil {
-		return nil, err
+	cfg := loadConfig()
+
+	var outputConfig *apiv1.Config
+
+	if cfg.Kubeconfig.Minify {
+		miniConfig, err := minifyConfig(config, contextName)
+		if err != nil {
+			return nil, err
+		}
+
+		outputConfig = miniConfig
+	} else {
+		contextExists := false
+
+		for _, context := range config.Contexts {
+			if context.Name == contextName {
+				contextExists = true
+				break
+			}
+		}
+
+		if !contextExists {
+			return nil, fmt.Errorf("context not found")
+		}
+
+		config.CurrentContext = contextName
+		outputConfig = &config
 	}
 
-	bytes, err := yaml.Marshal(miniConfig)
+	bytes, err := yaml.Marshal(outputConfig)
 	if err != nil {
 		return nil, err
 	}

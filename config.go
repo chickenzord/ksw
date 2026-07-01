@@ -14,7 +14,13 @@ type KswConfig struct {
 
 // KubeconfigConfig holds configuration related to kubeconfig minification.
 type KubeconfigConfig struct {
-	Minify bool `json:"minify" yaml:"minify"`
+	Minify      bool              `json:"minify" yaml:"minify"`
+	MergeOnExit MergeOnExitConfig `json:"merge_on_exit" yaml:"merge_on_exit"`
+}
+
+// MergeOnExitConfig holds configuration related to merging on exit.
+type MergeOnExitConfig struct {
+	Enabled bool `json:"enabled" yaml:"enabled"`
 }
 
 var userHomeDir = os.UserHomeDir
@@ -26,6 +32,9 @@ func loadConfig() KswConfig {
 		return KswConfig{
 			Kubeconfig: KubeconfigConfig{
 				Minify: false,
+				MergeOnExit: MergeOnExitConfig{
+					Enabled: false,
+				},
 			},
 		}
 	}
@@ -38,6 +47,9 @@ func loadConfigFromHome(home string) KswConfig {
 	cfg := KswConfig{
 		Kubeconfig: KubeconfigConfig{
 			Minify: false,
+			MergeOnExit: MergeOnExitConfig{
+				Enabled: false,
+			},
 		},
 	}
 
@@ -63,6 +75,7 @@ func loadConfigFromHome(home string) KswConfig {
 	var parsedCfg KswConfig
 
 	parsedCfg.Kubeconfig.Minify = false
+	parsedCfg.Kubeconfig.MergeOnExit.Enabled = false
 
 	if err := yaml.Unmarshal(configBytes, &parsedCfg); err != nil {
 		return cfg

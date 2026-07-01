@@ -18,15 +18,17 @@ func TestLoadConfig(t *testing.T) {
 	}()
 
 	tests := []struct {
-		name       string
-		homeSetup  func(t *testing.T, home string)
-		homeErr    error
-		wantMinify bool
+		name            string
+		homeSetup       func(t *testing.T, home string)
+		homeErr         error
+		wantMinify      bool
+		wantMergeOnExit bool
 	}{
 		{
-			name:       "no config files - defaults to minify: false",
-			homeSetup:  func(t *testing.T, home string) {},
-			wantMinify: false,
+			name:            "no config files - defaults to minify: false, merge_on_exit: false",
+			homeSetup:       func(t *testing.T, home string) {},
+			wantMinify:      false,
+			wantMergeOnExit: false,
 		},
 		{
 			name: "primary config file with minify: true",
@@ -41,7 +43,8 @@ func TestLoadConfig(t *testing.T) {
 					t.Fatalf("Failed to write config file: %v", err)
 				}
 			},
-			wantMinify: true,
+			wantMinify:      true,
+			wantMergeOnExit: false,
 		},
 		{
 			name: "primary config file with minify: false",
@@ -56,7 +59,8 @@ func TestLoadConfig(t *testing.T) {
 					t.Fatalf("Failed to write config file: %v", err)
 				}
 			},
-			wantMinify: false,
+			wantMinify:      false,
+			wantMergeOnExit: false,
 		},
 		{
 			name: "fallback config file with minify: true",
@@ -66,7 +70,8 @@ func TestLoadConfig(t *testing.T) {
 					t.Fatalf("Failed to write config file: %v", err)
 				}
 			},
-			wantMinify: true,
+			wantMinify:      true,
+			wantMergeOnExit: false,
 		},
 		{
 			name: "both files exist - primary takes precedence",
@@ -84,22 +89,52 @@ func TestLoadConfig(t *testing.T) {
 					t.Fatalf("Failed to write config file: %v", err)
 				}
 			},
-			wantMinify: true,
+			wantMinify:      true,
+			wantMergeOnExit: false,
 		},
 		{
-			name: "invalid YAML - defaults to minify: false",
+			name: "invalid YAML - defaults to minify: false, merge_on_exit: false",
 			homeSetup: func(t *testing.T, home string) {
 				content := []byte("kubeconfig: {\ninvalid yaml")
 				if err := os.WriteFile(filepath.Join(home, ".ksw.yaml"), content, 0600); err != nil {
 					t.Fatalf("Failed to write config file: %v", err)
 				}
 			},
-			wantMinify: false,
+			wantMinify:      false,
+			wantMergeOnExit: false,
 		},
 		{
-			name:       "home dir lookup error - defaults to minify: false",
-			homeErr:    errors.New("home error"),
-			wantMinify: false,
+			name:            "home dir lookup error - defaults to minify: false, merge_on_exit: false",
+			homeErr:         errors.New("home error"),
+			wantMinify:      false,
+			wantMergeOnExit: false,
+		},
+		{
+			name: "primary config with merge_on_exit enabled",
+			homeSetup: func(t *testing.T, home string) {
+				configDir := filepath.Join(home, ".config", "ksw")
+				if err := os.MkdirAll(configDir, 0755); err != nil {
+					t.Fatalf("Failed to create config dir: %v", err)
+				}
+
+				content := []byte("kubeconfig:\n  merge_on_exit:\n    enabled: true\n")
+				if err := os.WriteFile(filepath.Join(configDir, "config.yaml"), content, 0600); err != nil {
+					t.Fatalf("Failed to write config file: %v", err)
+				}
+			},
+			wantMinify:      false,
+			wantMergeOnExit: true,
+		},
+		{
+			name: "fallback config with merge_on_exit enabled",
+			homeSetup: func(t *testing.T, home string) {
+				content := []byte("kubeconfig:\n  merge_on_exit:\n    enabled: true\n")
+				if err := os.WriteFile(filepath.Join(home, ".ksw.yaml"), content, 0600); err != nil {
+					t.Fatalf("Failed to write config file: %v", err)
+				}
+			},
+			wantMinify:      false,
+			wantMergeOnExit: true,
 		},
 	}
 
@@ -121,6 +156,10 @@ func TestLoadConfig(t *testing.T) {
 			cfg := loadConfig()
 			if cfg.Kubeconfig.Minify != tt.wantMinify {
 				t.Errorf("loadConfig() Minify = %v, want %v", cfg.Kubeconfig.Minify, tt.wantMinify)
+			}
+
+			if cfg.Kubeconfig.MergeOnExit.Enabled != tt.wantMergeOnExit {
+				t.Errorf("loadConfig() MergeOnExit.Enabled = %v, want %v", cfg.Kubeconfig.MergeOnExit.Enabled, tt.wantMergeOnExit)
 			}
 		})
 	}

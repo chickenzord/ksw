@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"syscall"
 )
@@ -52,6 +53,30 @@ func startShell(shell, contextName string) error {
 	_ = os.Setenv("KSW_SHELL", shell)
 
 	logf("starting shell for context %s", contextName)
+
+	cfg := loadConfig()
+	if cfg.Kubeconfig.MergeOnExit.Enabled {
+		// Spawn shell as a child process
+		cmd := exec.Command(shell)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Env = os.Environ()
+
+		shellErr := cmd.Run()
+
+		// Merge temporary changes back
+		if err := mergeOnExit(kubeconfigOriginal, f.Name(), cfg.Kubeconfig.Minify); err != nil {
+			logf("error merging kubeconfig changes: %v", err)
+		}
+
+		// Clean up temporary kubeconfig file
+		if err := os.Remove(f.Name()); err != nil {
+			logf("failed to delete temporary kubeconfig file: %v", err)
+		}
+
+		return shellErr
+	}
 
 	// Replace ksw process with shell
 	// Temp file cleanup relies on OS temp directory cleanup

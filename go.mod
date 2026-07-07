@@ -1,14 +1,14 @@
 module github.com/chickenzord/ksw
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/ktr0731/go-fuzzyfinder v0.9.0
 	github.com/riywo/loginshell v0.0.0-20200815045211-7d26008be1ab
 	github.com/urfave/cli/v2 v2.27.7
-	golang.org/x/term v0.38.0
-	k8s.io/client-go v0.35.0
+	golang.org/x/term v0.39.0
+	k8s.io/client-go v0.36.2
 )
 
 require (
@@ -32,12 +32,12 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
-	golang.org/x/sys v0.39.0 // indirect
-	golang.org/x/text v0.32.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/apimachinery v0.35.0 // indirect
-	k8s.io/klog/v2 v2.130.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20251125145642-4e65d59e963e // indirect
+	k8s.io/apimachinery v0.36.2 // indirect
+	k8s.io/klog/v2 v2.140.0 // indirect
+	k8s.io/kube-openapi v0.0.0-20260317180543-43fb72c5454a // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
-	sigs.k8s.io/structured-merge-diff/v6 v6.3.1 // indirect
+	sigs.k8s.io/structured-merge-diff/v6 v6.3.2 // indirect
 )

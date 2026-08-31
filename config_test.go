@@ -195,6 +195,7 @@ func TestGetSessionsDir(t *testing.T) {
 	t.Run("default sessions_dir", func(t *testing.T) {
 		cfg := KswConfig{}
 		got := cfg.GetSessionsDir()
+
 		want := filepath.Join("/fake/home", ".ksw", "sessions")
 		if got != want {
 			t.Errorf("GetSessionsDir() = %q, want %q", got, want)
@@ -208,6 +209,7 @@ func TestGetSessionsDir(t *testing.T) {
 			},
 		}
 		got := cfg.GetSessionsDir()
+
 		want := "/custom/path/sessions"
 		if got != want {
 			t.Errorf("GetSessionsDir() = %q, want %q", got, want)
@@ -220,6 +222,7 @@ func TestGetSessionsDir(t *testing.T) {
 		}
 		cfg := KswConfig{}
 		got := cfg.GetSessionsDir()
+
 		want := filepath.Join(os.TempDir(), "ksw-sessions")
 		if got != want {
 			t.Errorf("GetSessionsDir() = %q, want %q", got, want)

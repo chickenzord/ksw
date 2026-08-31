@@ -42,6 +42,7 @@ func TestCreateSessionFile(t *testing.T) {
 	}
 
 	expectedFileName := fmt.Sprintf("%s.%d.yaml", sanitizeContextName(contextName), pid)
+
 	expectedPath := filepath.Join(sessionsDir, expectedFileName)
 	if filePath != expectedPath {
 		t.Errorf("filePath = %q, want %q", filePath, expectedPath)
@@ -52,6 +53,7 @@ func TestCreateSessionFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read created file: %v", err)
 	}
+
 	if string(content) != string(data) {
 		t.Errorf("content = %q, want %q", string(content), string(data))
 	}
@@ -61,6 +63,7 @@ func TestCreateSessionFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("os.Stat() failed: %v", err)
 	}
+
 	if info.Mode().Perm() != 0600 {
 		t.Errorf("file permissions = %v, want 0600", info.Mode().Perm())
 	}
@@ -71,6 +74,7 @@ func TestCleanupStaleSessions(t *testing.T) {
 
 	// 1. Session file belonging to current process (alive)
 	alivePid := os.Getpid()
+
 	aliveFile := filepath.Join(sessionsDir, fmt.Sprintf("alive-context.%d.yaml", alivePid))
 	if err := os.WriteFile(aliveFile, []byte("alive"), 0600); err != nil {
 		t.Fatalf("failed to write alive file: %v", err)
@@ -79,6 +83,7 @@ func TestCleanupStaleSessions(t *testing.T) {
 	// 2. Session file belonging to a non-existent PID (dead)
 	// PID 9999999 is very unlikely to be active
 	deadPid := 9999999
+
 	deadFile := filepath.Join(sessionsDir, fmt.Sprintf("dead-context.%d.yaml", deadPid))
 	if err := os.WriteFile(deadFile, []byte("dead"), 0600); err != nil {
 		t.Fatalf("failed to write dead file: %v", err)
@@ -141,6 +146,7 @@ func TestIsProcessAlive(t *testing.T) {
 	if isProcessAlive(0) {
 		t.Errorf("expected PID 0 to not be reported alive")
 	}
+
 	if isProcessAlive(-1) {
 		t.Errorf("expected PID -1 to not be reported alive")
 	}

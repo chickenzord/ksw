@@ -136,6 +136,22 @@ func TestLoadConfig(t *testing.T) {
 			wantMinify:      false,
 			wantMergeOnExit: true,
 		},
+		{
+			name: "primary config with custom sessions_dir",
+			homeSetup: func(t *testing.T, home string) {
+				configDir := filepath.Join(home, ".config", "ksw")
+				if err := os.MkdirAll(configDir, 0755); err != nil {
+					t.Fatalf("Failed to create config dir: %v", err)
+				}
+
+				content := []byte("kubeconfig:\n  sessions_dir: /custom/sessions\n")
+				if err := os.WriteFile(filepath.Join(configDir, "config.yaml"), content, 0600); err != nil {
+					t.Fatalf("Failed to write config file: %v", err)
+				}
+			},
+			wantMinify:      false,
+			wantMergeOnExit: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -163,6 +179,55 @@ func TestLoadConfig(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetSessionsDir(t *testing.T) {
+	origUserHomeDir := userHomeDir
+
+	defer func() {
+		userHomeDir = origUserHomeDir
+	}()
+
+	userHomeDir = func() (string, error) {
+		return "/fake/home", nil
+	}
+
+	t.Run("default sessions_dir", func(t *testing.T) {
+		cfg := KswConfig{}
+		got := cfg.GetSessionsDir()
+
+		want := filepath.Join("/fake/home", ".ksw", "sessions")
+		if got != want {
+			t.Errorf("GetSessionsDir() = %q, want %q", got, want)
+		}
+	})
+
+	t.Run("custom sessions_dir", func(t *testing.T) {
+		cfg := KswConfig{
+			Kubeconfig: KubeconfigConfig{
+				SessionsDir: "/custom/path/sessions",
+			},
+		}
+		got := cfg.GetSessionsDir()
+
+		want := "/custom/path/sessions"
+		if got != want {
+			t.Errorf("GetSessionsDir() = %q, want %q", got, want)
+		}
+	})
+
+	t.Run("home dir error fallback", func(t *testing.T) {
+		userHomeDir = func() (string, error) {
+			return "", errors.New("home lookup failed")
+		}
+		cfg := KswConfig{}
+		got := cfg.GetSessionsDir()
+
+		want := filepath.Join(os.TempDir(), "ksw-sessions")
+		if got != want {
+			t.Errorf("GetSessionsDir() = %q, want %q", got, want)
+		}
+	})
 }
 
 func TestGenerateKubeconfig_MinifyToggle(t *testing.T) {

@@ -12,10 +12,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 1. **Kubeconfig Loading**: Loads kubeconfig from `KSW_KUBECONFIG_ORIGINAL`, `KUBECONFIG`, or `$HOME/.kube/config`.
 2. **Minification**: Extracts only the cluster, user, and context needed for the specified context.
-3. **Shell Execution**: Creates a temporary kubeconfig file and uses `syscall.Exec()` to replace the ksw process with the shell.
+3. **Shell Execution**: Creates an isolated kubeconfig file in `~/.ksw/sessions` and uses `syscall.Exec()` to replace the ksw process with the shell.
 4. **Context Switching**: When already in a ksw session, updates the kubeconfig file in-place without spawning new processes.
 5. **Context Selection**: Tries exact match first, then shows a fuzzy finder UI if no match is found.
-6. **Cleanup**: Temporary kubeconfig files rely on OS temp directory cleanup (no explicit cleanup mechanism).
+6. **Cleanup**: Stale session files whose owner PID is no longer alive are cleaned up on ksw launch.
 
 ### Environment Variables
 
@@ -36,8 +36,8 @@ When starting a shell, ksw sets these variables:
 - All files are in the `main` package (single-package binary).
 - Version variables (`Version`, `GitCommit`, `BuildDate`) are set via ldflags at build time.
 - Uses `syscall.Exec()` to replace the ksw process with a shell, so ksw never appears in the process tree.
-- Temporary kubeconfig files are created with the pattern `{context-name}.*.yaml` in the OS temp directory.
-- Temp file cleanup relies on OS temp directory cleanup (no explicit cleanup mechanism).
-- When already in a ksw session (`KSW_KUBECONFIG_ORIGINAL` is set), updates the temp file in-place instead of creating a new session.
+- Session kubeconfig files are created with the pattern `{sanitized-context-name}.{pid}.yaml` in `~/.ksw/sessions` (configurable via `sessions_dir`).
+- Stale session cleanup is performed lazily by probing process liveness (PID).
+- When already in a ksw session (`KSW_KUBECONFIG_ORIGINAL` is set), updates the session file in-place instead of creating a new session.
 - Context selection tries an exact match first before showing the fuzzy finder.
 - Contexts are sorted alphabetically before being shown in the fuzzy finder.

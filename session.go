@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -49,7 +50,14 @@ func isProcessAlive(pid int) bool {
 	// On Unix, FindProcess always succeeds. Sending signal 0 performs error-checking
 	// without actually sending a signal.
 	err = process.Signal(syscall.Signal(0))
-	return err == nil
+	if err == nil {
+		return true
+	}
+	// If err is EPERM, the process exists and is running, but we lack permission to signal it.
+	if errors.Is(err, syscall.EPERM) {
+		return true
+	}
+	return false
 }
 
 // cleanupStaleSessions removes session files whose corresponding processes are no longer alive.

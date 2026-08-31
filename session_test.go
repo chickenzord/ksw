@@ -107,3 +107,47 @@ func TestCleanupStaleSessions(t *testing.T) {
 		t.Errorf("unrelated file was deleted")
 	}
 }
+
+func TestCreateSessionFile_NestedDirectory(t *testing.T) {
+	tmpDir := t.TempDir()
+	// Test multi-level nested directory creation
+	sessionsDir := filepath.Join(tmpDir, "deep", "nested", "sessions", "dir")
+	contextName := "nested-ctx"
+	pid := os.Getpid()
+	data := []byte("apiVersion: v1\nkind: Config\n")
+
+	filePath, err := createSessionFile(sessionsDir, contextName, pid, data)
+	if err != nil {
+		t.Fatalf("createSessionFile() failed to create nested directory: %v", err)
+	}
+
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		t.Fatalf("expected session file to exist at %s", filePath)
+	}
+}
+
+func TestIsProcessAlive(t *testing.T) {
+	// Current process must be alive
+	if !isProcessAlive(os.Getpid()) {
+		t.Errorf("expected current process PID %d to be alive", os.Getpid())
+	}
+
+	// PID 1 (init / launchd) is always alive
+	if !isProcessAlive(1) {
+		t.Errorf("expected PID 1 (init/launchd) to be alive")
+	}
+
+	// Non-positive PIDs should return false
+	if isProcessAlive(0) {
+		t.Errorf("expected PID 0 to not be reported alive")
+	}
+	if isProcessAlive(-1) {
+		t.Errorf("expected PID -1 to not be reported alive")
+	}
+
+	// Non-existent PID should return false
+	if isProcessAlive(9999999) {
+		t.Errorf("expected non-existent PID 9999999 to not be alive")
+	}
+}
+

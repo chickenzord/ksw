@@ -16,6 +16,7 @@ type KswConfig struct {
 type KubeconfigConfig struct {
 	Minify      bool              `json:"minify" yaml:"minify"`
 	MergeOnExit MergeOnExitConfig `json:"merge_on_exit" yaml:"merge_on_exit"`
+	SessionsDir string            `json:"sessions_dir" yaml:"sessions_dir"`
 }
 
 // MergeOnExitConfig holds configuration related to merging on exit.
@@ -83,3 +84,18 @@ func loadConfigFromHome(home string) KswConfig {
 
 	return parsedCfg
 }
+
+// GetSessionsDir returns the configured sessions directory or the default ~/.ksw/sessions.
+func (c KswConfig) GetSessionsDir() string {
+	if c.Kubeconfig.SessionsDir != "" {
+		return c.Kubeconfig.SessionsDir
+	}
+
+	home, err := userHomeDir()
+	if err != nil {
+		return filepath.Join(os.TempDir(), "ksw-sessions")
+	}
+
+	return filepath.Join(home, ".ksw", "sessions")
+}
+

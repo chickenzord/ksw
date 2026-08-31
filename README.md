@@ -46,6 +46,10 @@ kubeconfig:
   # When true, extracts only the cluster, user, and context needed for the active context.
   # Defaults to false, which preserves other contexts but updates current-context.
   minify: false
+
+  # Directory to store generated session kubeconfigs.
+  # Defaults to ~/.ksw/sessions.
+  sessions_dir: ~/.ksw/sessions
 ```
 
 ## How it works
@@ -60,18 +64,18 @@ ksw [context-name]
    - Path set in `KUBECONFIG`
    - Default location `$HOME/.kube/config`
 2. Evaluates configuration options. If `minify` is enabled, extracts only the cluster, user, and context for the specified context. Otherwise, copies the config and updates the `current-context`.
-3. Writes the isolated config to a temporary file.
-4. Replaces the `ksw` process with your shell using `syscall.Exec()`, setting `KUBECONFIG` to the temp file.
+3. Writes the isolated config to a session file under `~/.ksw/sessions` (named `<context>.<pid>.yaml`).
+4. Replaces the `ksw` process with your shell using `syscall.Exec()`, setting `KUBECONFIG` to the session file.
 5. Your shell now uses the isolated context.
 
 ### When already in a ksw session:
 1. Running `ksw [another-context]` detects you are already in a session.
-2. Updates the existing temp kubeconfig file in-place.
+2. Updates the existing session kubeconfig file in-place.
 3. Returns immediately. Kubectl sees the new context right away without spawning new shells.
 
 ### Environment variables set in the shell:
 - `KSW_KUBECONFIG_ORIGINAL`: Path to your original kubeconfig file
-- `KSW_KUBECONFIG`: Path to the temp isolated kubeconfig
+- `KSW_KUBECONFIG`: Path to the isolated session kubeconfig
 - `KUBECONFIG`: Same as KSW_KUBECONFIG
 - `KSW_ACTIVE`: Always set to "true" when in a ksw session
 - `KSW_SHELL`: Path to your shell (e.g. `/bin/zsh`)
@@ -79,5 +83,4 @@ ksw [context-name]
 ## Limitations
 
 - No automatic prompt indicator. Use the environment variables (`KSW_ACTIVE`, `KSW_KUBECONFIG_ORIGINAL`) in your prompt setup.
-- Temp kubeconfig files rely on OS cleanup (typically automatic in `/tmp`).
 - Primarily tested on ZSH on Darwin Arm64.

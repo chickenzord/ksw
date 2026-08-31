@@ -33,28 +33,24 @@ func startShell(shell, contextName string) error {
 		return err
 	}
 
-	f, err := os.CreateTemp("", fmt.Sprintf("%s.*.yaml", contextName))
+	cfg := loadConfig()
+	sessionsDir := cfg.GetSessionsDir()
+
+	cleanupStaleSessions(sessionsDir)
+
+	sessionFile, err := createSessionFile(sessionsDir, contextName, os.Getpid(), b)
 	if err != nil {
 		return err
 	}
 
-	defer func() {
-		_ = f.Close()
-	}()
-
-	if _, err := f.Write(b); err != nil {
-		return err
-	}
-
-	_ = os.Setenv("KUBECONFIG", f.Name())
+	_ = os.Setenv("KUBECONFIG", sessionFile)
 	_ = os.Setenv("KSW_KUBECONFIG_ORIGINAL", kubeconfigOriginal)
-	_ = os.Setenv("KSW_KUBECONFIG", f.Name())
+	_ = os.Setenv("KSW_KUBECONFIG", sessionFile)
 	_ = os.Setenv("KSW_ACTIVE", "true")
 	_ = os.Setenv("KSW_SHELL", shell)
 
 	logf("starting shell for context %s", contextName)
 
-	cfg := loadConfig()
 	if cfg.Kubeconfig.MergeOnExit.Enabled {
 		// Spawn shell as a child process
 		cmd := exec.Command(shell)
@@ -66,12 +62,12 @@ func startShell(shell, contextName string) error {
 		shellErr := cmd.Run()
 
 		// Merge temporary changes back
-		if err := mergeOnExit(kubeconfigOriginal, f.Name(), cfg.Kubeconfig.Minify); err != nil {
+		if err := mergeOnExit(kubeconfigOriginal, sessionFile, cfg.Kubeconfig.Minify); err != nil {
 			logf("error merging kubeconfig changes: %v", err)
 		}
 
 		// Clean up temporary kubeconfig file
-		if err := os.Remove(f.Name()); err != nil {
+		if err := os.Remove(sessionFile); err != nil {
 			logf("failed to delete temporary kubeconfig file: %v", err)
 		}
 
@@ -79,7 +75,7 @@ func startShell(shell, contextName string) error {
 	}
 
 	// Replace ksw process with shell
-	// Temp file cleanup relies on OS temp directory cleanup
+	// Session file cleanup relies on lazy cleanup of stale sessions by PID
 	if err := syscall.Exec(shell, []string{shell}, os.Environ()); err != nil {
 		return fmt.Errorf("failed to exec shell: %w", err)
 	}
